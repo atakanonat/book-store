@@ -5,14 +5,19 @@ namespace WebApi.BookOperations.GetBookById
 {
     public class GetBookByIdQuery
     {
+        public int id;
         private readonly BookStoreDbContext _bookStoreDbContext;
         public GetBookByIdQuery(BookStoreDbContext bookStoreDbContext)
         {
             _bookStoreDbContext = bookStoreDbContext;
         }
-        public ByIdBookModel Handle(int id)
+        public ByIdBookModel Handle()
         {
             var book = _bookStoreDbContext.Books.First(book => book.Id == id);
+            if (book is null)
+            {
+                throw new InvalidOperationException("The book doesn't exist.");
+            }
             var vmBook = new ByIdBookModel()
             {
                 Title = book.Title,

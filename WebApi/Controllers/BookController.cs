@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApi.BookOperations.AddBook;
+using WebApi.BookOperations.DeleteBook;
 using WebApi.BookOperations.GetBookById;
 using WebApi.BookOperations.GetBooks;
 using WebApi.BookOperations.UpdateBook;
@@ -31,9 +32,17 @@ namespace WebApi.AddControllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            GetBookByIdQuery query = new GetBookByIdQuery(_context);
-            var res = query.Handle(id);
-            return Ok(res);
+            try
+            {
+                GetBookByIdQuery query = new GetBookByIdQuery(_context);
+                query.id = id;
+                var res = query.Handle();
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPost]
@@ -58,7 +67,9 @@ namespace WebApi.AddControllers
             try
             {
                 UpdateBookCommand updateBook = new UpdateBookCommand(_context);
-                updateBook.Handle(id, updatedBook);
+                updateBook.id = id;
+                updateBook.updatedBook = updatedBook;
+                updateBook.Handle();
             }
             catch (Exception e)
             {
@@ -70,16 +81,16 @@ namespace WebApi.AddControllers
         [HttpDelete("{id}")]
         public IActionResult DeleteBook(int id)
         {
-            var book = _context.Books.SingleOrDefault(book => book.Id == id);
-
-            if (book is null)
+            try
             {
-                return BadRequest();
+                DeleteBookCommand deleteBook = new DeleteBookCommand(_context);
+                deleteBook.id = id;
+                deleteBook.Handle();
             }
-
-            _context.Books.Remove(book);
-
-            _context.SaveChanges();
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
             return Ok();
         }
     }
